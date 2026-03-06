@@ -2,15 +2,15 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/lib/constants";
 import {
+  UserRole,
   useUserStore,
   useOnboardingStore,
-  UserRole,
   RoleDisplay,
   RoleTranslation,
   REGISTRATION_ROLES_UI,
 } from "@/lib/store";
 import { authService } from "@/lib/api";
-import { authStyles } from "@/styles/auth.styles";
+import { authStyles } from "@/styles";
 import { ChevronDown, Check } from "lucide-react";
 
 export function RegistrationPage() {
@@ -28,25 +28,31 @@ export function RegistrationPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanPhone = identifier.replace(/\D/g, "");
+
     if (!role) return alert("Выберите роль");
-    if (!identifier || !password || !confirmPassword) return alert("Заполните все поля");
+    if (!cleanPhone || !password || !confirmPassword)
+      return alert("Заполните все поля");
     if (password !== confirmPassword) return alert("Пароли не совпадают");
     if (!agreementAccepted) return alert("Примите соглашение");
 
     if (role === "Client") {
-      setRegData({ phone: identifier, password, role });
+      setRegData({ phone: cleanPhone, password, role });
       navigate(ROUTES.QUIZ);
       return;
     }
 
     try {
-      await authService.register(Number(identifier), password, role);
-      const loginResponse = await authService.login(identifier, password);
+      await authService.register(Number(cleanPhone), password, role);
+      const loginResponse = await authService.login(cleanPhone, password);
       login(loginResponse.role as UserRole);
       navigate(ROUTES.MAIN);
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || "Ошибка регистрации";
-      alert(typeof errorMessage === "string" ? errorMessage : "Что-то пошло не так");
+      const errorMessage =
+        error.response?.data?.message || error.message || "Ошибка регистрации";
+      alert(
+        typeof errorMessage === "string" ? errorMessage : "Что-то пошло не так",
+      );
     }
   };
 
@@ -64,7 +70,13 @@ export function RegistrationPage() {
               tabIndex={0}
               onBlur={() => setTimeout(() => setIsRolePickerOpen(false), 150)} // Задержка для клика по элементу
             >
-              <span style={{ color: role ? "var(--color-on-surface)" : "var(--color-on-surface-variant)" }}>
+              <span
+                style={{
+                  color: role
+                    ? "var(--color-on-surface)"
+                    : "var(--color-on-surface-variant)",
+                }}
+              >
                 {role ? `Роль: ${RoleDisplay[role]}` : "Выберите роль"}
               </span>
               <ChevronDown size={20} color="var(--color-icon)" />
@@ -123,16 +135,22 @@ export function RegistrationPage() {
           </div>
 
           <label className={authStyles.checkboxContainer}>
-            <input 
-              type="checkbox" 
-              className="hidden" 
-              checked={agreementAccepted} 
-              onChange={() => setAgreementAccepted(!agreementAccepted)} 
+            <input
+              type="checkbox"
+              className="hidden"
+              checked={agreementAccepted}
+              onChange={() => setAgreementAccepted(!agreementAccepted)}
             />
-            <div className={`${authStyles.checkbox} ${agreementAccepted ? authStyles.checkboxChecked : ""}`}>
-              {agreementAccepted && <Check size={16} color="var(--color-background)" />}
+            <div
+              className={`${authStyles.checkbox} ${agreementAccepted ? authStyles.checkboxChecked : ""}`}
+            >
+              {agreementAccepted && (
+                <Check size={16} color="var(--color-background)" />
+              )}
             </div>
-            <span className={authStyles.checkboxText}>Принимаю пользовательское соглашение</span>
+            <span className={authStyles.checkboxText}>
+              Принимаю пользовательское соглашение
+            </span>
           </label>
 
           <button type="submit" className={authStyles.mainButton}>

@@ -1,8 +1,5 @@
 export { authService } from "./authService";
-export {
-  chatService,
-  signalRService,
-} from "./chatService";
+export { chatService, signalRService } from "./chatService";
 export {
   fetchServiceTable,
   updateServiceTableItem,
@@ -11,7 +8,8 @@ export {
 } from "./tableService";
 export {
   clientService,
-  mapDtoToDashboard
+  mapDtoToDashboard,
+  type QuestionnaireDto,
 } from "./clientService";
 export { usersService } from "./usersService";
 export { profileService } from "./profileService";

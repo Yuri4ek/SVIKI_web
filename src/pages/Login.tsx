@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/lib/constants";
-import { useUserStore } from "@/lib/store";
+import { UserRole, useUserStore } from "@/lib/store";
 import { authService } from "@/lib/api";
-import { authStyles } from "@/styles/auth.styles";
+import { authStyles } from "@/styles";
 import { Check } from "lucide-react";
 
 export function LoginPage() {
@@ -19,12 +19,7 @@ export function LoginPage() {
     if (identifier !== "" && password !== "") {
       try {
         const loginResponse = await authService.login(identifier, password);
-        const serverRole = loginResponse.role as
-          | "Client"
-          | "Agent"
-          | "Lawyer"
-          | "Admin"
-          | "Manager";
+        const serverRole = loginResponse.role as UserRole;
         login(serverRole);
         navigate(ROUTES.MAIN);
       } catch (error: any) {

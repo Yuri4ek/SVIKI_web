@@ -1,4 +1,5 @@
 export {
+  type UserRole,
   RoleTranslation,
   RoleDisplay,
   REGISTRATION_ROLES_UI,
