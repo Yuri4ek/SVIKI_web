@@ -1,9 +1,5 @@
 export { authService } from "./authService";
 export {
-  AttachmentModel,
-  MessageModel,
-  ChatContact,
-  ChatModel,
   chatService,
   signalRService,
 } from "./chatService";
@@ -12,13 +8,10 @@ export {
   updateServiceTableItem,
   createServiceTableItem,
   deleteServiceTableItem,
-  IServiceTableItem,
 } from "./tableService";
 export {
   clientService,
-  mapDtoToDashboard,
-  QuestionnaireDto,
-  ClientDashboardData
+  mapDtoToDashboard
 } from "./clientService";
-export { usersService, PagedResult } from "./usersService";
-export { profileService, UserInfoModel } from "./profileService";
+export { usersService } from "./usersService";
+export { profileService } from "./profileService";

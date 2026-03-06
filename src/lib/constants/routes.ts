@@ -1,6 +1,7 @@
 export const ROUTES = {
-  AUTH: "/authorizationRegistration",
+  LOGIN: "/authorization",
+  REGISTER: "/registration",
   VERIFICATION: "/verification",
-  MAIN: "/main",
+  MAIN: "/",
   QUIZ: "/quiz",
 } as const;

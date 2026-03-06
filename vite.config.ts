@@ -1,24 +1,25 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-import path from "path";
+import { fileURLToPath, URL } from "node:url";
+
 export default defineConfig({
   plugins: [
     react({
-      babel: {
-        plugins: [["babel-plugin-react-compiler"]],
-      },
+      //babel: {
+      //  plugins: [["babel-plugin-react-compiler"]],
+      //},
     }),
-    tailwindcss(),
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "@components": path.resolve(__dirname, "./src/components"),
-      "@hooks": path.resolve(__dirname, "./src/hooks"),
-      "@lib": path.resolve(__dirname, "./src/lib"),
-      "@pages": path.resolve(__dirname, "./src/pages"),
-      "@router": path.resolve(__dirname, "./src/router"),
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@components": fileURLToPath(
+        new URL("./src/components", import.meta.url),
+      ),
+      "@hooks": fileURLToPath(new URL("./src/hooks", import.meta.url)),
+      "@lib": fileURLToPath(new URL("./src/pages", import.meta.url)),
+      "@pages": fileURLToPath(new URL("./src/pages", import.meta.url)),
+      "@router": fileURLToPath(new URL("./src/router", import.meta.url)),
     },
   },
 });
