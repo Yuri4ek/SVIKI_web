@@ -107,8 +107,20 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Логируем все неудачные запросы
+    console.error(
+      `[Axios] Ошибка ${error.response?.status} при запросе к ${originalRequest?.url}`,
+    );
+
     if (error.response?.status === 401 && !originalRequest._retry) {
+      console.warn(
+        "[Axios] Получен 401 Unauthorized. Попытка обновления токена...",
+      );
+
       if (originalRequest.url?.includes("login-by-refresh-token")) {
+        console.error(
+          "[Axios] Refresh token также невалиден или протух. Выход из аккаунта.",
+        );
         handleLogout();
         return Promise.reject(error);
       }

@@ -56,6 +56,9 @@ export function QuizPage() {
     if (isSending) return;
 
     if (!regData) {
+      console.warn(
+        "[Quiz] Отсутствуют данные regData. Пользователь обновил страницу?",
+      );
       window.alert("Ошибка: Нет данных для регистрации. Вернитесь назад.");
       navigate(ROUTES.LOGIN, { replace: true });
       return;
@@ -63,7 +66,7 @@ export function QuizPage() {
 
     try {
       setIsSending(true);
-
+      console.log("[Quiz] 1. Формирование сырых данных...");
       const rawData = visibleQuestions.reduce(
         (acc, q) => {
           acc[q.id] = answers[q.id];
@@ -92,20 +95,36 @@ export function QuizPage() {
         taxDebtAmount: rawData["6_1"],
       };
 
+      console.log(
+        "[Quiz] 2. Отправка запроса на регистрацию...",
+        regData.phone,
+      );
       await authService.register(
         Number(regData.phone),
         regData.password,
         regData.role,
       );
 
+      console.log("[Quiz] 3. Авторизация после регистрации...");
       const loginRes = await authService.login(regData.phone, regData.password);
 
-      const emptyQuiz = await clientService.getQuestionnaire();
+      console.log("[Quiz] 4. Запрос пустой анкеты с сервера...");
+      let emptyQuiz: Partial<QuestionnaireDto> = {};
+      try {
+        const response = await clientService.getQuestionnaire();
+        if (response) emptyQuiz = response;
+      } catch (qError) {
+        console.warn(
+          "[Quiz] Анкета еще не создана сервером или произошла ошибка получения:",
+          qError,
+        );
+        // Если сервер ожидает POST без ID для создания новой анкеты, оставляем undefined/0
+      }
 
       const finalPayload: QuestionnaireDto = {
         ...mappedQuiz,
-        id: emptyQuiz.id,
-        clientId: emptyQuiz.clientId,
+        id: emptyQuiz?.id || 0, // Безопасное обращение
+        clientId: emptyQuiz?.clientId || 0, // Безопасное обращение
         hasActiveLoans: mappedQuiz.hasActiveLoans || false,
         hasGracePeriod: mappedQuiz.hasGracePeriod || false,
         hasMortgage: mappedQuiz.hasMortgage || false,
@@ -117,10 +136,12 @@ export function QuizPage() {
         hasTaxDebt: mappedQuiz.hasTaxDebt || false,
       };
 
+      console.log("[Quiz] 5. Сохранение заполненной анкеты:", finalPayload);
       await clientService.saveQuestionnaire(finalPayload);
 
       clear();
       login(loginRes.role as UserRole);
+      console.log("[Quiz] 6. Успешное завершение. Перенаправление на MAIN.");
       navigate(ROUTES.MAIN, { replace: true });
     } catch (e: any) {
       console.error("Ошибка сохранения данных", e);

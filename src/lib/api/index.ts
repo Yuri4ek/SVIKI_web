@@ -9,6 +9,7 @@ export {
 export {
   clientService,
   mapDtoToDashboard,
+  type ClientDashboardData,
   type QuestionnaireDto,
 } from "./clientService";
 export { usersService } from "./usersService";
