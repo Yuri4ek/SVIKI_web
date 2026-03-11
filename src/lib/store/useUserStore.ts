@@ -23,12 +23,12 @@ export const REGISTRATION_ROLES_UI = Object.keys(RoleTranslation);
 interface UserState {
   role: UserRole | null;
   isLoggedIn: boolean;
-  isAuthChecking: boolean; // Флаг для экрана загрузки при старте приложения
+  isAuthChecking: boolean;
 
   setRole: (role: UserRole) => void;
   login: (role: UserRole) => void;
   logout: () => void;
-  checkAuth: () => Promise<void>; // Метод для проверки сессии через бэкенд
+  checkAuth: () => Promise<void>;
 }
 
 export const useUserStore = create<UserState>((set) => ({
@@ -47,27 +47,27 @@ export const useUserStore = create<UserState>((set) => ({
   },
 
   checkAuth: async () => {
-    console.log("[Auth Store] Начало проверки сессии (checkAuth)...");
+    if (
+      !useUserStore.getState().isAuthChecking &&
+      useUserStore.getState().isLoggedIn
+    ) {
+      return;
+    }
+
+    console.log("[Auth Store] Восстановление сессии из хранилища...");
     try {
       const token = localStorage.getItem("token");
+      const refreshToken = localStorage.getItem("refreshToken");
 
-      if (!token) {
-        console.log("[Auth Store] Токен не найден в localStorage.");
+      if (!token || !refreshToken) {
+        console.log("[Auth Store] Токены отсутствуют.");
         set({ isLoggedIn: false, role: null, isAuthChecking: false });
         return;
       }
 
       const decoded = jwtDecode<SvikiJwtPayload>(token);
-      const currentTime = Date.now() / 1000;
 
-      if (decoded.exp && decoded.exp < currentTime) {
-        console.warn("[Auth Store] Токен истек. Требуется обновление.");
-        // Здесь axios interceptor попытается его обновить при первом запросе,
-        // но пока мы считаем пользователя неавторизованным.
-        set({ isLoggedIn: false, role: null, isAuthChecking: false });
-        return;
-      }
-
+      // Достаем роль
       const rawRole =
         decoded.role ||
         decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
@@ -76,14 +76,14 @@ export const useUserStore = create<UserState>((set) => ({
       ) as UserRole;
 
       console.log(
-        `[Auth Store] Токен валиден. Роль: ${userRole}. Сессия восстановлена.`,
+        `[Auth Store] Роль восстановлена: ${userRole}. Делегируем проверку свежести токена Axios.`,
       );
+
       set({ isLoggedIn: true, role: userRole, isAuthChecking: false });
     } catch (error) {
-      console.error("[Auth Store] Ошибка при проверке токена:", error);
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
-      set({ isLoggedIn: false, role: null, isAuthChecking: false });
+      console.error("[Auth Store] Ошибка при чтении токена:", error);
+      useUserStore.getState().logout();
+      set({ isAuthChecking: false });
     }
   },
 }));

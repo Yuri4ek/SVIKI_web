@@ -4,6 +4,7 @@ import {
   mapDtoToDashboard,
   ClientDashboardData,
 } from "@/lib/api";
+import { clientDashboardStyles as styles } from "@/styles";
 
 export const ClientDashboard = () => {
   const [data, setData] = useState<ClientDashboardData | null>(null);
@@ -14,8 +15,7 @@ export const ClientDashboard = () => {
     setLoading(true);
     try {
       const dto = await clientService.getQuestionnaire();
-      const formattedData = mapDtoToDashboard(dto);
-      setData(formattedData);
+      setData(mapDtoToDashboard(dto));
     } catch (error) {
       console.error("Ошибка загрузки анкеты в дашборде", error);
     } finally {
@@ -29,79 +29,51 @@ export const ClientDashboard = () => {
 
   if (loading || !data) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+      <div className={styles.loaderWrapper}>
+        <div className={styles.loader}></div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col p-4 md:p-8 max-w-3xl mx-auto w-full pb-20">
-      <div className="flex justify-between items-center mt-4 mb-2">
-        <h1 className="text-3xl font-bold text-[var(--color-on-surface)]">
-          СВИКИ
-        </h1>
+    <div className={styles.wrapper}>
+      <div className={styles.headerContainer}>
+        <h1 className={styles.title}>СВИКИ</h1>
       </div>
 
-      {/* Секция: Кредитный рейтинг */}
-      <h2 className="text-xl font-semibold text-[var(--color-on-surface)] mb-3 mt-6 ml-2">
-        Кредитный рейтинг
-      </h2>
+      <h2 className={styles.sectionTitle}>Кредитный рейтинг</h2>
       <div
-        className="bg-[var(--color-surface-container)] rounded-xl p-4 mb-3 border border-[var(--color-outline-variant)] cursor-pointer hover:bg-[var(--color-surface-container-high)] transition-colors"
+        className={styles.cardInteractive}
         onClick={() => setShowHistory(true)}
       >
-        <div className="flex flex-row justify-between gap-3">
-          <div className="flex-1 flex flex-col items-center bg-[var(--color-secondary-container)] p-4 rounded-xl">
-            <span className="text-2xl font-bold text-[var(--color-on-secondary-container)]">
-              {data.creditScoreNBKI}
-            </span>
-            <span className="text-sm text-[var(--color-on-secondary-container)] opacity-80 mt-1">
-              НБКИ
-            </span>
+        <div className={styles.scoreGrid}>
+          <div className={styles.scoreItem}>
+            <span className={styles.scoreValue}>{data.creditScoreNBKI}</span>
+            <span className={styles.scoreLabel}>НБКИ</span>
           </div>
-          <div className="flex-1 flex flex-col items-center bg-[var(--color-secondary-container)] p-4 rounded-xl">
-            <span className="text-2xl font-bold text-[var(--color-on-secondary-container)]">
-              {data.creditScoreOKB}
-            </span>
-            <span className="text-sm text-[var(--color-on-secondary-container)] opacity-80 mt-1">
-              ОКБ
-            </span>
+          <div className={styles.scoreItem}>
+            <span className={styles.scoreValue}>{data.creditScoreOKB}</span>
+            <span className={styles.scoreLabel}>ОКБ</span>
           </div>
         </div>
-        <p className="text-center text-xs mt-3 opacity-60 text-[var(--color-on-surface-variant)]">
-          Нажмите для просмотра динамики
-        </p>
+        <p className={styles.scoreHint}>Нажмите для просмотра динамики</p>
       </div>
 
-      {/* Секция: Транспорт */}
-      <h2 className="text-xl font-semibold text-[var(--color-on-surface)] mb-3 mt-6 ml-2">
-        Транспорт
-      </h2>
-      <div className="bg-[var(--color-surface-container)] rounded-xl p-4 mb-3 border border-[var(--color-outline-variant)]">
-        <div className="flex justify-between items-center py-3 border-b border-[var(--color-outline-variant)]">
-          <span className="text-sm text-[var(--color-on-surface-variant)] flex-1">
-            Авто в собственности
-          </span>
-          <span className="text-sm font-semibold text-[var(--color-on-surface)] text-right flex-1">
-            {data.car?.answer || "Нет"}
-          </span>
+      <h2 className={styles.sectionTitle}>Транспорт</h2>
+      <div className={styles.card}>
+        <div className={styles.row}>
+          <span className={styles.rowLabel}>Авто в собственности</span>
+          <span className={styles.rowValue}>{data.car?.answer || "Нет"}</span>
         </div>
         {data.car?.answer === "Да" && (
-          <div className="flex justify-between items-center py-3 border-b border-[var(--color-outline-variant)]">
-            <span className="text-sm text-[var(--color-on-surface-variant)] flex-1">
-              Стоимость
-            </span>
-            <span className="text-sm font-semibold text-[var(--color-on-surface)] text-right flex-1">
-              {data.car?.details}
-            </span>
+          <div className={styles.row}>
+            <span className={styles.rowLabel}>Стоимость</span>
+            <span className={styles.rowValue}>{data.car?.details}</span>
           </div>
         )}
-        <div className="flex justify-between items-center py-3">
-          <span className="text-sm text-[var(--color-on-surface-variant)] flex-1">
-            Автокредит
-          </span>
-          <span className="text-sm font-semibold text-[var(--color-on-surface)] text-right flex-1">
+        <div className={styles.rowLast}>
+          <span className={styles.rowLabel}>Автокредит</span>
+          <span className={styles.rowValue}>
             {data.carLoan?.answer || "Нет"}{" "}
             {data.carLoan?.answer === "Да" && data.carLoan?.details
               ? `(${data.carLoan.details})`
@@ -110,97 +82,24 @@ export const ClientDashboard = () => {
         </div>
       </div>
 
-      {/* Секция: Недвижимость */}
-      <h2 className="text-xl font-semibold text-[var(--color-on-surface)] mb-3 mt-6 ml-2">
-        Недвижимость
-      </h2>
-      <div className="bg-[var(--color-surface-container)] rounded-xl p-4 mb-3 border border-[var(--color-outline-variant)]">
-        <div className="flex justify-between items-center py-3 border-b border-[var(--color-outline-variant)]">
-          <span className="text-sm text-[var(--color-on-surface-variant)] flex-1">
-            Ипотека
-          </span>
-          <span className="text-sm font-semibold text-[var(--color-on-surface)] text-right flex-1">
-            {data.mortgage?.answer || "Нет"}
-          </span>
-        </div>
-        {data.mortgage?.answer === "Да" && (
-          <div className="flex justify-between items-center py-3 border-b border-[var(--color-outline-variant)]">
-            <span className="text-sm text-[var(--color-on-surface-variant)] flex-1">
-              Остаток долга
-            </span>
-            <span className="text-sm font-semibold text-[var(--color-on-surface)] text-right flex-1">
-              {data.mortgage?.details}
-            </span>
-          </div>
-        )}
-        <div className="flex justify-between items-center py-3">
-          <span className="text-sm text-[var(--color-on-surface-variant)] flex-1">
-            Доп. имущество
-          </span>
-          <span className="text-sm font-semibold text-[var(--color-on-surface)] text-right flex-1">
-            {data.additionalProperty?.answer || "Нет"}
-          </span>
-        </div>
-      </div>
-
-      {/* Секция: Задолженности */}
-      <h2 className="text-xl font-semibold text-[var(--color-on-surface)] mb-3 mt-6 ml-2">
-        Задолженности
-      </h2>
-      <div className="bg-[var(--color-surface-container)] rounded-xl p-4 mb-3 border border-[var(--color-outline-variant)]">
-        <div className="flex justify-between items-center py-3 border-b border-[var(--color-outline-variant)]">
-          <span className="text-sm text-[var(--color-on-surface-variant)] flex-1">
-            Долги ФССП
-          </span>
-          <span
-            className={`text-sm font-semibold text-right flex-1 ${data.fsspDebt?.answer === "Нет" ? "text-emerald-500" : "text-[var(--color-error)]"}`}
-          >
-            {data.fsspDebt?.answer || "Нет"}{" "}
-            {data.fsspDebt?.answer === "Да" && data.fsspDebt?.details
-              ? `(${data.fsspDebt.details})`
-              : ""}
-          </span>
-        </div>
-        <div className="flex justify-between items-center py-3">
-          <span className="text-sm text-[var(--color-on-surface-variant)] flex-1">
-            Налоги
-          </span>
-          <span
-            className={`text-sm font-semibold text-right flex-1 ${data.taxDebt?.answer === "Нет" ? "text-emerald-500" : "text-[var(--color-error)]"}`}
-          >
-            {data.taxDebt?.answer || "Нет"}{" "}
-            {data.taxDebt?.answer === "Да" && data.taxDebt?.details
-              ? `(${data.taxDebt.details})`
-              : ""}
-          </span>
-        </div>
-      </div>
-
-      {/* Модальное окно истории */}
       {showHistory && (
         <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          className={styles.modalOverlay}
           onClick={() => setShowHistory(false)}
         >
           <div
-            className="bg-[var(--color-background)] rounded-2xl p-6 w-full max-w-md shadow-xl"
+            className={styles.modalContent}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-semibold text-[var(--color-on-surface)] mb-4">
-              Динамика рейтинга
-            </h2>
+            <h2 className={styles.modalTitle}>Динамика рейтинга</h2>
             <div className="my-4">
-              <div className="flex justify-between items-center py-3 border-b border-[var(--color-outline-variant)]">
-                <span className="text-sm text-[var(--color-on-surface-variant)]">
-                  Текущий месяц
-                </span>
-                <span className="text-base font-bold text-[var(--color-on-surface)]">
-                  Нет данных
-                </span>
+              <div className={styles.rowLast}>
+                <span className={styles.rowLabel}>Текущий месяц</span>
+                <span className={styles.rowValue}>Нет данных</span>
               </div>
             </div>
             <button
-              className="w-full h-12 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-xl font-semibold mt-4 hover:opacity-90 transition-opacity"
+              className={styles.modalButton}
               onClick={() => setShowHistory(false)}
             >
               Закрыть

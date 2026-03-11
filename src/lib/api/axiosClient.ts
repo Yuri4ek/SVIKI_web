@@ -48,21 +48,37 @@ const isTokenExpired = (token: string): boolean => {
 const performTokenRefresh = async (): Promise<string> => {
   const refreshToken = localStorage.getItem("refreshToken");
 
-  if (!refreshToken) {
+  if (
+    !refreshToken ||
+    refreshToken === "undefined" ||
+    refreshToken === "null"
+  ) {
     handleLogout();
     throw new Error("No refresh token available.");
   }
 
   const response = await axios.get(`${API_URL}/auth/login-by-refresh-token`, {
-    params: { refreshToken },
+    params: {
+      refreshToken,
+      _t: Date.now(),
+    },
+    headers: {
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
+      Expires: "0",
+    },
   });
 
   const { token: newToken, refreshToken: newRefreshToken } = response.data;
 
-  localStorage.setItem("token", newToken);
-  localStorage.setItem("refreshToken", newRefreshToken);
-
-  return newToken;
+  if (newToken && newRefreshToken) {
+    localStorage.setItem("token", newToken);
+    localStorage.setItem("refreshToken", newRefreshToken);
+    return newToken;
+  } else {
+    handleLogout();
+    throw new Error("Server did not return new tokens.");
+  }
 };
 
 api.interceptors.request.use(
@@ -107,7 +123,14 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Логируем все неудачные запросы
+    if (originalRequest?.url?.includes("login-by-refresh-token")) {
+      console.error(
+        "[Axios] Refresh token также невалиден или протух. Выход из аккаунта.",
+      );
+      handleLogout();
+      return Promise.reject(error);
+    }
+
     console.error(
       `[Axios] Ошибка ${error.response?.status} при запросе к ${originalRequest?.url}`,
     );
@@ -116,14 +139,6 @@ api.interceptors.response.use(
       console.warn(
         "[Axios] Получен 401 Unauthorized. Попытка обновления токена...",
       );
-
-      if (originalRequest.url?.includes("login-by-refresh-token")) {
-        console.error(
-          "[Axios] Refresh token также невалиден или протух. Выход из аккаунта.",
-        );
-        handleLogout();
-        return Promise.reject(error);
-      }
 
       if (isRefreshing) {
         return new Promise<string>((resolve, reject) => {

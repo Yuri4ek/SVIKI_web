@@ -1,3 +1,4 @@
+export { api } from "./axiosClient";
 export { authService } from "./authService";
 export { chatService, signalRService } from "./chatService";
 export {
@@ -12,5 +13,5 @@ export {
   type ClientDashboardData,
   type QuestionnaireDto,
 } from "./clientService";
-export { usersService } from "./usersService";
+export { usersService, type UserBase } from "./usersService";
 export { profileService } from "./profileService";

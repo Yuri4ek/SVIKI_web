@@ -20,6 +20,23 @@ const PublicRoutes = () => {
 };
 
 export const AppRouter = () => {
+  const isAuthChecking = useUserStore((state) => state.isAuthChecking);
+
+  if (isAuthChecking) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <p>Загрузка СВИКИ...</p>
+      </div>
+    );
+  }
+
   return (
     <BrowserRouter>
       <Routes>

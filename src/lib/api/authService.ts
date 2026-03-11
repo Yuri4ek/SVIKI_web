@@ -31,12 +31,14 @@ export interface SvikiJwtPayload {
 
 export const authService = {
   login: async (phoneEmail: string, password: string) => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+
     const response = await api.post<LoginResponse>("/login", {
       phoneEmail: phoneEmail,
       password: password,
       remember: true,
     });
-
     const { token, refreshToken, tokenExpired } = response.data;
     const decoded = jwtDecode<SvikiJwtPayload>(token);
 
@@ -46,9 +48,10 @@ export const authService = {
 
     const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
 
-    // Web: localStorage вместо SecureStore
-    localStorage.setItem("token", token);
-    localStorage.setItem("refreshToken", refreshToken);
+    if (token && refreshToken) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("refreshToken", refreshToken);
+    }
 
     return {
       token,
@@ -81,12 +84,16 @@ export const authService = {
   refreshToken: async (): Promise<string | null> => {
     try {
       const refreshToken = localStorage.getItem("refreshToken");
+      const currentToken = localStorage.getItem("token");
       if (!refreshToken) return null;
 
       const response = await axios.get(
         `${API_URL}/auth/login-by-refresh-token`,
         {
           params: { refreshToken },
+          headers: currentToken
+            ? { Authorization: `Bearer ${currentToken}` }
+            : {},
         },
       );
 
